@@ -11,6 +11,7 @@
 #define NO_ARG_ERR 1    // No input parameters specified
 #define DIRECTORY_ERR 2 // Incorrectly specified directory
 #define MANY_ARG_ERR 3  // Many argument
+#define STAT_ERR 4      // Stat error 
 
 #define false 0
 #define true 1
@@ -67,16 +68,31 @@ int32_t main(int32_t argc, char **argv)
 
     while (entry = readdir(dir))
     {
-        if (isSystemDir(entry->d_name) == 0 && entry->d_type == 4)
+        if (isSystemDir(entry->d_name) == 0)
         {
             char *pathDir = (char *)calloc((strlen(path) + 1 + strlen(entry->d_name) + 1), sizeof(char)); // +2 так как strlen - не учитывает \0
             memmove(pathDir, path, strlen(path));                                                         // гарантирует корректное поведение для строк
             strcat(pathDir, "/");                                                                         // в конец помещется \0
             strcat(pathDir, entry->d_name);                                                               // в конец помещется \0
-            printTheInternalCatalog(pathDir);
+            
+            /* Проверим, что у нас собралось имя каталога */
+            struct stat statBuf;
+            /* Проверяем что stat сработал корректно */
+            if(stat(pathDir, &statBuf) != 0)
+            {
+                fprintf(stderr,"directory not specified!\n");
+                exit(STAT_ERR);
+            }
+
+            // Проверка каталога при помощи макроса - теперь не зависит от системы
+            if(S_ISDIR(statBuf.st_mode))
+            {
+                printTheInternalCatalog(pathDir);
+                DirCount++;
+            }
             free(pathDir); // Переменная локальная тоже не совсем нужно
-            DirCount++;
         }
+
         if (isSystemDir(entry->d_name) == 0)
             AnyFile++;
     }
@@ -188,15 +204,29 @@ void printTheInternalCatalog(char *pathDir)
 
     while (entry = readdir(dir))
     {
-        if (isSystemDir(entry->d_name) == 0 && entry->d_type == 4)
+        if (isSystemDir(entry->d_name) == 0)
         {
-            DirCount++; // Увеличиваем количество счетчика каталогов в вызове
+            
             // Формируем путь к каталогу
             char *newPath = (char *)calloc(strlen(pathDir) + 1 + strlen(entry->d_name) + 1, sizeof(char)); // +2 так как strlen - не учитывает \0
             memmove(newPath, pathDir, strlen(pathDir));                                                    // гарантирует корректное поведение для строк
             strcat(newPath, "/");                                                                          // в конец помещется \0
             strcat(newPath, entry->d_name);                                                                // в конец помещется \0
-            printTheInternalCatalog(newPath);
+            
+             /* Проверим, что у нас собралось имя каталога */
+            struct stat statBuf;
+            /* Проверяем что stat сработал корректно */
+            if(stat(newPath, &statBuf) != 0)
+            {
+                fprintf(stderr,"directory not specified!\n");
+                exit(STAT_ERR);
+            }
+            // Проверка каталога при помощи макроса - теперь не зависит от системы
+            if(S_ISDIR(statBuf.st_mode))
+            {
+                printTheInternalCatalog(newPath);
+                DirCount++; // Увеличиваем количество счетчика каталогов в вызове
+            }
             free(newPath); // Вообще не совсем нужно так как переменная локальная
         }
     }
