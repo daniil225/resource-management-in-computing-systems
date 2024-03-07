@@ -85,6 +85,11 @@ pid_t waitpid(pid_t __pid, int *__stat_loc, int __options) - Ожидание д
 <br>
 <br>
 <br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
  # 6. Исходный код программы
 
