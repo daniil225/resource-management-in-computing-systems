@@ -2,7 +2,7 @@
 .a4-container {
   width: 210mm;
   height: 297mm;
-  margin: auto; /* для центровки страницы */
+  /*margin: auto; /* для центровки страницы */
   page-break-after: always; /* для начала следующего элемента с новой страницы */
 }
 </style>
@@ -37,6 +37,7 @@
 Новосибирск 2024
  <div style="text-align: center;font-size:20px">
 
+</div>
 </div>
 
 <div class="a4-container">
