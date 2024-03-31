@@ -36,8 +36,17 @@ int main()
 {
 
     /* Регистрация обработчиков сигналов */
-    signal(SIGCONT, handler);
-    signal(SIGBREAK, handler);
+    if((signal(SIGCONT, handler)) == SIG_ERR)
+    {
+        fprintf(stderr, "Ошибка назначения сигнала\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if((signal(SIGBREAK, handler)) == SIG_ERR)
+    {
+        fprintf(stderr, "Ошибка назначения сигнала\n");
+        exit(EXIT_FAILURE);
+    }
 
     pid_t P1; // ID 1 ого процесса
     pid_t P2; // ID 2 ого процесса порожденного в 1-ом
@@ -68,7 +77,9 @@ int main()
     printf("P0: Try to create P1\n");
     if ((P1 = fork()) == 0)
     {
-        usleep(1000); // тактирование
+        int killStatus = 0;
+
+        usleep(100); // тактирование
 
         printf("P1: P1 create sucess. pid(P1) = %d\n", P1);
 
@@ -97,8 +108,9 @@ int main()
         write(K1[1], &dataP1.pid, 4);
         write(K1[1], dataP1.data, 40);
         printf("P1(1): Data wreaten and send to K1\n");
-        kill(getppid(), SIGCONT); // state = 1; Сигнал отправки данных
-        usleep(100);              // Тактирование
+        while(kill(getppid(), SIGCONT)); // state = 1; Сигнал отправки данных
+        
+        //usleep(100);              // Тактирование
         /************************************************************/
 
         /* Ждем корректного завершения P2 */
@@ -121,8 +133,8 @@ int main()
         write(K1[1], &dataP2.pid, 4);
         write(K1[1], dataP2.data, 40);
         printf("P1(3): Data from P2 got and written to K1 and sended\n");
-        kill(getppid(), SIGCONT);
-        usleep(100); // Тактирование
+        while(kill(getppid(), SIGCONT));
+        //usleep(100); // Тактирование
 
         /* Формируем 4 набор данных для P0 */
         strcat(dataP1.data, " ");
@@ -131,11 +143,11 @@ int main()
         write(K1[1], &dataP1.pid, 4);
         write(K1[1], dataP1.data, 40);
         printf("P1(4): Data P1 modifie and send to K1\n");
-        kill(getppid(), SIGCONT); // state = 1; Сигнал отправки данных
-        usleep(100);              // Тактирование
+        while(kill(getppid(), SIGCONT)); // state = 1; Сигнал отправки данных
+        //usleep(100);              // Тактирование
         /* Выход из цикла в P0 - можно было это на waitpid повесить, но так хотя бы сигналы поиспользовали */
-        usleep(100);
-        kill(getppid(), SIGBREAK);
+        usleep(100); // Тактируем 
+        while(kill(getppid(), SIGBREAK));
 
         exit(EXIT_SUCCESS);
     }
@@ -168,6 +180,7 @@ int main()
                 printf("P0: break;\n");
                 break;
             }
+            usleep(100); // Ждем 
         }
 
         waitpid(P1, &status, NULL); // Ждем P1, когда он завершится читаем данные из канала K1
