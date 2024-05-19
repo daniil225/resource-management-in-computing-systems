@@ -1,3 +1,119 @@
+<style>
+.a4-container {
+  width: 210mm;
+  height: 297mm;
+  margin: auto; /* для центровки страницы */
+  page-break-after: always; /* для начала следующего элемента с новой страницы */
+}
+
+.img_all_div
+{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;	
+}
+</style>
+
+<div class="a4-container" markdown=1>
+
+![Титульник](./Title.png)
+
+</div>
+
+<div class="a4-container" markdown=1>
+
+# 1. Условие (Вариант №10)
+Программа моделирует работу монитора обработки сообщений. Порожденные процессы, обладающие различными приоритетами и выполняющие некоторые циклы работ, посредством очереди сообщений передают родительскому процессу имена программ из предыдущих лабораторных работ, которые им должны быть запущены. Родительский процесс, обрабатывая сообщения в соответствии с их приоритетами, следит, чтобы одновременно было запущено не более трех программ.
+
+# 2. Анализ задачи
+
+1. Организовать очередь сообщений и последовательно (в соответсвии с приоритетом) внести в эту очередь цикл задач для выполнения
+   - Упарвление будет происходить при помощи сигналов и сегмета разделяемой памяти. 
+2. Организовать цикл в котором будет осуществляться цикл работ. Данные для запуска берутся из очереди сообщений.
+   - Для корректной работы предусмотреть возможность захвата ресурсов (очередь сообщений) по средствам семафора. 
+3. В родительском процессе ждать завершения дочерних процессов. При этом родительские процесс контролирует, что бы не было запущено больше 3-х процессов.  
+
+</div>
+
+<div class="a4-container" markdown=1>
+
+# 3.Используемые програмные средства
+
+---
+
+- `int fork ();` - порождение процессапотомка
+- `int waitpid ( pid_t pid , int * status , NULL );` - ожидание завершения процессапотомка
+- `int getpid ();` - определение pid текущего процесса
+- `int getppid ();` - определение процесса родителя
+- `int sleep( int seconds );` - остановка процесса на n секунд
+- `void (*signal (int signal, void (*sigfunc) (int func)))(int)` - устанавливает обработчик сигнала на signal
+-  `int shmget(key_t key, int size, int shmflg);` - возвращает идентификатор разделяемому сегменту памяти
+-  ` void *shmat(int shmid, const void *shmaddr, int shmflg);` - Функция shmat подстыковывает сегмент разделяемой памяти shmid к адресному пространству вызывающего процесса
+-  `int msgget(key_t key, int msgflg);` - Эта функция возвращает идентификатор очереди сообщений, связанный со значением параметра key 
+-  ` int msgsnd(int msqid, struct msgbuf *msgp, size_t msgsz, int msgflg);` - отпраляет сообщение в очередь сообщений
+-  ` int semop(int semid, struct sembuf *sops, unsigned nsops);` - Функция производит операции над выбранными элементами из набора семафоров semid.
+-  ` int msgsnd(int msqid, struct msgbuf *msgp, size_t msgsz, int msgflg);` - получить сообщение из очереди сообщений
+-  ` int shmdt(const void *shmaddr);` - Функция shmdt отстыковывает сегмент разделяемой памяти, находящийся по адресу shmaddr
+-  ` int shmctl(int shmid, int cmd, struct shmid_ds *buf);` - shmctl() позволяет пользователю получать информацию о разделяемых сегментах памяти, устанавливать владельца, группу разделяемого сегмента, права на него; эта функция может также удалить сегмент
+-  ` int msgctl(int msqid, int cmd, struct msqid_ds *buf);` - Эта функция выполняет контрольную операцию, заданную в cmd, над очередью сообщений msqid.
+-  `int semctl(int semid, int semnum, int cmd, ...);` - Функция semctl позволяет выполнять операции, определенные в cmd над набором семафоров, указанным в semid или над семафором с номером semnum из этого набора.
+---
+
+</div>
+
+
+<div class="a4-container" markdown=1>
+
+# 4.Спецификация
+
+- Программа находится в папке  /lab5
+- Чтобы собрать программу нужно ввести make
+- Чтобы запустить программу, нужно использовать команду "./main"
+- В результате работы программы, будут выводиться pid процессов, которые которые запускают программы из цикла работ 
+
+# 5. Результат работы программы
+
+---
+
+```
+Proc pid = 107891 Load was end
+Proc pid = 107892 Load was end
+Proc pid = 107891 was end
+proc pid = 107892 was end
+pid1 = 107894: lab1
+pid2 = 107895: lab2
+pid3 = 107896: lab3
+pid = 107894 Work lab1
+pid = 107895 Work lab2
+pid = 107896 Work lab3
+pid1 = 108147: lab4
+pid2 = 108148: lab5
+pid3 = 108149: lab1
+pid = 108148 Work lab5
+pid = 108149 Work lab1
+pid = 108147 Work lab4
+pid1 = 109373: lab1
+pid2 = 109374: lab2
+pid3 = 109375: lab3
+pid = 109374 Work lab2
+pid = 109373 Work lab1
+pid = 109375 Work lab3
+pid1 = 109379: lab4
+pid2 = 109380: lab5
+pid3 = 109381: lab1
+pid = 109380 Work lab5
+pid = 109381 Work lab1
+pid = 109379 Work lab4
+```
+
+---
+
+</div>
+
+# 6. Исходный код
+
+**main.c**
+```c
 #include <stdio.h>
 #include <sys/types.h> // pid_t
 #include <unistd.h>    // fork(), sleep(), usleep()
@@ -7,7 +123,6 @@
 #include <sys/wait.h>   // waitpid
 #include <sys/signal.h> // signal, kill
 #include <string.h>
-#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -431,3 +546,57 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+
+```
+
+**makefile**
+```makefile
+
+# Makefile for lab #5
+all: main
+
+main: main.o
+	gcc main.o -o main
+	
+lab1: lab1.o
+	gcc lab1.o -o lab1
+
+lab2: lab2.o
+	gcc lab2.o -o lab2
+
+lab3: lab3.o
+	gcc lab3.o -o lab3
+
+lab4: lab4.o
+	gcc lab4.o -o lab4
+
+lab5: lab5.o
+	gcc lab5.o -o lab5
+
+
+main.o: main.c
+	gcc -c main.c
+
+lab1.o: lab1.c
+	gcc  -c lab1.c
+
+lab2.o: lab2.c
+	gcc  -c lab2.c
+
+lab3.o: lab3.c
+	gcc  -c lab3.c
+
+lab4.o: lab4.c
+	gcc  -c lab4.c
+
+lab5.o: lab5.c
+	gcc  -c lab5.c
+
+
+clean:
+	rm -rf *.o main
+
+```
+
+
